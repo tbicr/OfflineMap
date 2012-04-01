@@ -1,0 +1,13 @@
+<!DOCTYPE HTML>
+<html manifest="appcache.manifest">
+<head>
+    <title>Offline Map solution in web browser</title>
+    <link type="text/css" rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <div id="map"></div>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+    <script>window.google && window.google.maps || document.write('<script src="gmapapi.js"><\/script>')</script>
+    <script type="text/javascript" src="script.js"></script>
+</body>
+</html>
