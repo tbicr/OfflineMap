@@ -10,43 +10,29 @@ style.css
 script.js
 gmapapi.js
 gmapcache/main.js
-gmapcache/common_map_util_onion_controls_stats_marker.js
+gmapcache/components.js
 gmapcache/empty.js
 
-gmapcache/arrow-down.png
-gmapcache/cb_scout_sprite_api_003.png
-gmapcache/google_white.png
-gmapcache/imgs8.png
-gmapcache/mapcontrols3d7.png
-gmapcache/openhand_8_8.cur
-gmapcache/rotate2.png
-gmapcache/transparent.png
+gmapcache/gstatic/arrow-down.png
+gmapcache/gstatic/cb/mod_cb_scout/cb_scout_sprite_api_003.png
+gmapcache/gstatic/cb/target_locking.gif
+gmapcache/gstatic/google_white.png
+gmapcache/gstatic/iw3.png
+gmapcache/gstatic/iws3.png
+gmapcache/gstatic/mapcontrols3d7.png
+gmapcache/gstatic/markers2/marker_sprite.png
+gmapcache/gstatic/mv/imgs8.png
+gmapcache/gstatic/rotate2.png
+gmapcache/gstatic/szc4.png
+gmapcache/gstatic/transparent.png
 
-http://maps.googleapis.com/maps/api/js?sensor=false
-http://maps.gstatic.com/intl/en_us/mapfiles/api-3/8/5/main.js
-
-http://maps.gstatic.com/mapfiles/arrow-down.png
-http://maps.gstatic.com/mapfiles/cb/mod_cb_scout/cb_scout_sprite_api_003.png
-http://maps.gstatic.com/mapfiles/google_white.png
-http://maps.gstatic.com/mapfiles/mv/imgs8.png
-http://maps.gstatic.com/mapfiles/mapcontrols3d7.png
-http://maps.gstatic.com/mapfiles/openhand_8_8.cur
-http://maps.gstatic.com/mapfiles/rotate2.png
-http://maps.gstatic.com/mapfiles/transparent.png
-
+gmapcache/gstatic/openhand_8_8.cur
+gmapcache/gstatic/closedhand_8_8.cur
 
 FALLBACK:
-http://maps.googleapis.com/maps/api/js?sensor=false gmapapi2.js
-http://maps.gstatic.com/intl/en_us/mapfiles/api-3/8/5/main.js gmapcache/main.js
-http://maps.gstatic.com/cat_js/intl/en_us/mapfiles/api-3* gmapcache/common_map_util_onion_controls_stats_marker.js
-http://maps.googleapis.com/maps/api/js/AuthenticationService.Authenticate* gmapcache/empty.js
-http://maps.googleapis.com/maps/api/js/QuotaService.RecordEvent* gmapcache/empty.js
-
-http://maps.gstatic.com/mapfiles/arrow-down.png gmapcache/arrow-down.png
-http://maps.gstatic.com/mapfiles/cb/mod_cb_scout/cb_scout_sprite_api_003.png gmapcache/cb_scout_sprite_api_003.png
-http://maps.gstatic.com/mapfiles/google_white.png gmapcache/google_white.png
-http://maps.gstatic.com/mapfiles/mv/imgs8.png gmapcache/imgs8.png
-http://maps.gstatic.com/mapfiles/mapcontrols3d7.png gmapcache/mapcontrols3d7.png
-http://maps.gstatic.com/mapfiles/openhand_8_8.cur gmapcache/openhand_8_8.cur
-http://maps.gstatic.com/mapfiles/rotate2.png gmapcache/rotate2.png
-http://maps.gstatic.com/mapfiles/transparent.png gmapcache/transparent.png
+gmapcache/googleapis/maps/api/js/AuthenticationService.Authenticate gmapcache/empty.js
+gmapcache/googleapis/maps/api/js/QuotaService.RecordEvent gmapcache/empty.js
+gmapcache/googleapis/maps/api/js/StaticMapService.GetMapImage gmapcache/empty.js
+gmapcache/googleapis/maps/api/js/ViewportInfoService.GetViewportInfo gmapcache/empty.js
+gmapcache/googleapis/maps/gen_204 gmapcache/empty.js
+gmapcache/googleapis/mapslt/ft gmapcache/empty.js
