@@ -1,4 +1,4 @@
-spriteRanges = {
+var spriteRanges = {
     0: {
         tl: {x: 0, y: 0},
         br: {x: 0, y: 0}
@@ -54,8 +54,22 @@ spriteRanges = {
     13: {
         tl: {x: 4717, y: 2630},
         br: {x: 4728, y: 2639}
+    },
+    14: {
+        tl: {x: 9439, y: 5262},
+        br: {x: 9452, y: 5277}
+    },
+    15: {
+        tl: {x: 18878, y: 10525},
+        br: {x: 18905, y: 10554}
+    },
+    16: {
+        tl: {x: 37757, y: 21051},
+        br: {x: 37810, y: 21108}
     }
-}
+};
+
+var max_zoom = 13;
 
 function imageToBase64(image) {
     var canvas = document.createElement("canvas");
@@ -65,7 +79,7 @@ function imageToBase64(image) {
     var ctx = canvas.getContext("2d");
     ctx.drawImage(image, 0, 0);
 
-    return dataURL = canvas.toDataURL("image/png");
+    return canvas.toDataURL("image/png");
 }
 
 function loadImageToLocalStorage(z, x, y){
@@ -85,6 +99,9 @@ function clearLocalStorage() {
 function prepareLocalStorage() {
     console.info('Start preparing localstorage');
     for (var z in spriteRanges) {
+        if (z > max_zoom) {
+            break;
+        }
         var sprites = spriteRanges[z];
         for (var x=sprites.tl.x; x<=sprites.br.x; x++) {
             for (var y=sprites.tl.y; y<=sprites.br.y; y++) {
