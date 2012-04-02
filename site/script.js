@@ -105,6 +105,7 @@ var mapTypeIds = [];
 for(var type in google.maps.MapTypeId) {
     mapTypeIds.push(google.maps.MapTypeId[type]);
 }
+
 mapTypeIds.push("OSM");
 mapTypeIds.push("MyGmap");
 mapTypeIds.push("LocalGmap");

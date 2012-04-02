@@ -5,6 +5,36 @@ import sys
 from multiprocessing.pool import ThreadPool as Pool
 
 
+class Point():
+
+    def __init__(self, lat, lng):
+        self.lat = lat
+        self.lng = lng
+
+    def __eq__(self, other):
+        return self.lat == other.lat and self.lng == other.lng
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.lat, self.lng))
+
+    def clone(self, delta_lat=0, delta_lng=0):
+        return Point(self.lat + delta_lat, self.lng + delta_lng)
+
+    def to_lat_lng(self):
+        return (self.lat, self.lng)
+
+    @property
+    def x(self):
+        return self.lng
+
+    @property
+    def y(self):
+        return self.lat
+
+
 class Tile():
 
     __repr_template = '{x: %(x)s, y: %(y)s, zoom: %(zoom)s}'
@@ -37,9 +67,59 @@ class Templates():
         self.save_file_path_template = save_file_path_template
 
 
+def get_length(point1, point2):
+    return math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2)
+
+
+def get_angle(point1, point2, point3):
+    side12 = get_length(point1, point2)
+    side13 = get_length(point1, point3)
+    side23 = get_length(point2, point3)
+    if side12 == 0 or side13 == 0:
+        return 0
+    value = min(max((side12 ** 2 + side13 ** 2 - side23 ** 2) / (2 * side12 * side13), -1), 1)
+    return math.acos(value)
+
+
+def get_top_point(points):
+    top_point = Point(sys.maxint, None)
+    for lat, lng in points:
+        if lat < top_point.lat:
+            top_point = Point(lat, lng)
+    return top_point
+
+
+def get_next_polygon_point(angle_point, first_end_point, points):
+    next_point = angle_point
+    next_angle = 0
+    for lat, lng in points:
+        current_point = Point(lat, lng)
+        current_angle = get_angle(angle_point, first_end_point, current_point)
+        if current_angle > next_angle or\
+           current_angle == next_angle and\
+           get_length(angle_point, current_point) > get_length(angle_point, next_point):
+            next_angle = current_angle
+            next_point = current_point
+    return next_point
+
+
+def get_polar_polygon_from_points(points):
+    top_point = get_top_point(points)
+    polygon_points = [top_point]
+    while True:
+        angle_point = polygon_points[-1]
+        first_end_point = polygon_points[-2] if len(polygon_points) > 1 else angle_point.clone(delta_lat=1)
+        next_point = get_next_polygon_point(angle_point, first_end_point, points)
+        if top_point != next_point:
+            polygon_points.append(next_point)
+        else:
+            break
+    return polygon_points
+
+
 def polar_to_int(lat, lng, zoom):
-    x = int(2 ** zoom * (180 + lat) / 360)
-    d = min(max(math.sin(lng * math.pi / 180), -0.9999), 0.9999)
+    x = int(2 ** zoom * (180 + lng) / 360)
+    d = min(max(math.sin(lat * math.pi / 180), -0.9999), 0.9999)
     y = int(2 ** zoom * (2 * math.pi - math.log((1 + d) / (1 - d))) / (4 * math.pi))
     return Tile(x, y, zoom)
 
@@ -60,18 +140,6 @@ def get_int_polygon_rectangle(int_polygon):
         x_bottom_right = max(x_bottom_right, point.x)
         y_bottom_right = max(y_bottom_right, point.y)
     return Tile(x_top_left, y_top_left, zoom), Tile(x_bottom_right, y_bottom_right, zoom)
-
-
-def get_length(tile1, tile2):
-    return math.sqrt((tile1.x - tile2.x) ** 2 + (tile1.y - tile2.y) ** 2)
-
-
-def get_angle(tile1, tile2, tile3):
-    side12 = get_length(tile1, tile2)
-    side13 = get_length(tile1, tile3)
-    side23 = get_length(tile2, tile3)
-    value = min(max((side12 ** 2 + side13 ** 2 - side23 ** 2) / (2 * side12 * side13), -1), 1)
-    return math.acos(value)
 
 
 def check_point_in_int_polygon(tile, int_polygon, imprecision=0.1):
@@ -123,23 +191,9 @@ def download_tiles_in_polar_polygon(polar_polygon, zooms, templates, threads_cou
 
 
 if __name__ == '__main__':
+    from fixtures import all_points
     url_template = 'http://mt0.googleapis.com/vt?src=apiv3&x=%(x)s&y=%(y)s&z=%(zoom)s'
     save_file_path_template = 'site/cache/%(zoom)s/%(x)s_%(y)s.png'
     zooms = xrange(15 + 1)
-    polar_polygon = [
-        (27.58862, 53.97622),
-        (27.72321, 53.96046),
-        (27.74312, 53.92490),
-        (27.71016, 53.86461),
-        (27.79805, 53.80464),
-        (27.65935, 53.75839),
-        (27.59618, 53.76854),
-        (27.43001, 53.82248),
-        (27.34212, 53.91317),
-        (27.33251, 53.94107),
-        (27.37645, 53.95077),
-        (27.46778, 53.99560),
-    ]
-
-    download_tiles_in_polar_polygon(polar_polygon, zooms,
-        Templates(url_template, save_file_path_template))
+    polar_polygon = [point.to_lat_lng() for point in get_polar_polygon_from_points(all_points)]
+    download_tiles_in_polar_polygon(polar_polygon, zooms, Templates(url_template, save_file_path_template))
