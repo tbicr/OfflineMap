@@ -71,6 +71,8 @@ var spriteRanges = {
 
 var max_zoom = 13;
 
+var webStorage = new WebStorage();
+
 function imageToBase64(image) {
     var canvas = document.createElement("canvas");
     canvas.width = image.width;
@@ -82,22 +84,20 @@ function imageToBase64(image) {
     return canvas.toDataURL("image/png");
 }
 
-function loadImageToLocalStorage(z, x, y){
+function loadImageToWebStorage(z, x, y){
     var url =  "cache/" + z + "/" + x + "_" + y + ".png";
     var img = new Image();
     img.onload = function() {
-        localStorage.setItem([z,x,y].join('_'), imageToBase64(img));
+        webStorage.setItem([z,x,y].join('_'), imageToBase64(img));
     };
     img.src = url;
 }
 
-function clearLocalStorage() {
-    console.info('Start clearing localstorage');
-    localStorage.clear();
+function clearWebStorage() {
+    webStorage.clear();
 }
 
-function prepareLocalStorage() {
-    console.info('Start preparing localstorage');
+function prepareWebStorage() {
     for (var z in spriteRanges) {
         if (z > max_zoom) {
             break;
@@ -105,176 +105,29 @@ function prepareLocalStorage() {
         var sprites = spriteRanges[z];
         for (var x=sprites.tl.x; x<=sprites.br.x; x++) {
             for (var y=sprites.tl.y; y<=sprites.br.y; y++) {
-                loadImageToLocalStorage(z, x, y);
+                loadImageToWebStorage(z, x, y);
             }
         }
     }
 }
 
-function tileInSprites(zoom, x, y) {
+function checkTileInSprites(coord, zoom) {
     var sprites = spriteRanges[zoom];
-    return sprites.tl.x <= x && x <= sprites.br.x && sprites.tl.y <= y && y <= sprites.br.y;
+    return sprites.tl.x <= coord.x && coord.x <= sprites.br.x && sprites.tl.y <= coord.y && coord.y <= sprites.br.y;
 }
 
-var element = document.getElementById("map");
-
-var mapTypeIds = [];
-for(var type in google.maps.MapTypeId) {
-    mapTypeIds.push(google.maps.MapTypeId[type]);
+function getOsmTileImgSrc(coord, zoom) {
+    return "http://tile.openstreetmap.org/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
 }
 
-mapTypeIds.push("OSM");
-mapTypeIds.push("MyGmap");
-mapTypeIds.push("LocalGmap");
-mapTypeIds.push("LocalstorageGmap");
-mapTypeIds.push("LocalMyGmap");
-mapTypeIds.push("LocalstorageMyGmap");
-mapTypeIds.push("LocalstorageLocalMyGmap");
-
-var map = new google.maps.Map(element, {
-    center: new google.maps.LatLng(53.902254, 27.561850),
-    zoom: 3,
-    mapTypeId: "MyGmap",
-    mapTypeControlOptions: {
-        mapTypeIds: mapTypeIds,
-        style: google.maps.MapTypeControlStyle.DROPDOWN_MENU
-    }
-});
-
-map.mapTypes.set("OSM", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        return "http://tile.openstreetmap.org/" + zoom + "/" + coord.x + "/" + coord.y + ".png";
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "OSM",
-    maxZoom: 15
-}));
-
-map.mapTypes.set("MyGmap", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        return ["http://mt0.googleapis.com/vt?src=apiv3",
-            "x=" + coord.x,
-            "y=" + coord.y,
-            "z=" + zoom
-        ].join('&');
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "MyGmap",
-    maxZoom: 15
-}));
-
-map.mapTypes.set("LocalGmap", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        return "cache/" + zoom + "/" + coord.x + "_" + coord.y + ".png"
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "LocalGmap",
-    maxZoom: 15
-}));
-
-map.mapTypes.set("LocalstorageGmap", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        return localStorage.getItem([zoom, coord.x, coord.y].join('_'));
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "LocalstorageGmap",
-    maxZoom: 15
-}));
-
-map.mapTypes.set("LocalMyGmap", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        return tileInSprites(zoom, coord.x, coord.y) ?
-            "cache/" + zoom + "/" + coord.x + "_" + coord.y + ".png" :
-            ["http://mt0.googleapis.com/vt?src=apiv3",
-                "x=" + coord.x,
-                "y=" + coord.y,
-                "z=" + zoom
-            ].join('&');
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "LocalMyGmap",
-    maxZoom: 15
-}));
-
-map.mapTypes.set("LocalstorageMyGmap", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        var image = localStorage.getItem([zoom, coord.x, coord.y].join('_'));
-        return image ? image : ["http://mt0.googleapis.com/vt?src=apiv3",
-            "x=" + coord.x,
-            "y=" + coord.y,
-            "z=" + zoom
-        ].join('&');
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "LocalstorageMyGmap",
-    maxZoom: 15
-}));
-
-map.mapTypes.set("LocalstorageLocalMyGmap", new google.maps.ImageMapType({
-    getTileUrl: function(coord, zoom) {
-        var image = localStorage.getItem([zoom, coord.x, coord.y].join('_'));
-        return image ? image : tileInSprites(zoom, coord.x, coord.y) ?
-            "cache/" + zoom + "/" + coord.x + "_" + coord.y + ".png" :
-            ["http://mt0.googleapis.com/vt?src=apiv3",
-                "x=" + coord.x,
-                "y=" + coord.y,
-                "z=" + zoom
-            ].join('&');
-    },
-    tileSize: new google.maps.Size(256, 256),
-    name: "LocalstorageLocalMyGmap",
-    maxZoom: 15
-}));
-
-google.maps.event.addListener(map, 'click', function(point) {
-    var marker = new google.maps.Marker({
-        position: point.latLng,
-        map: map
-    });
-
-    google.maps.event.addListener(marker, 'dblclick', function() {
-        marker.setMap(null);
-    });
-
-    google.maps.event.addListener(marker, 'click', function() {
-        new google.maps.InfoWindow({
-            content: 'lat: ' + point.latLng.lat() + '<br>lng:' + point.latLng.lng()
-        }).open(map, marker);
-    });
-});
-
-function CustomControl(controlDiv, map, title, handler) {
-    controlDiv.style.padding = '5px';
-
-    var controlUI = document.createElement('DIV');
-    controlUI.style.backgroundColor = 'white';
-    controlUI.style.borderStyle = 'solid';
-    controlUI.style.borderWidth = '2px';
-    controlUI.style.cursor = 'pointer';
-    controlUI.style.textAlign = 'center';
-    controlUI.title = title;
-    controlDiv.appendChild(controlUI);
-
-    var controlText = document.createElement('DIV');
-    controlText.style.fontFamily = 'Arial,sans-serif';
-    controlText.style.fontSize = '12px';
-    controlText.style.paddingLeft = '4px';
-    controlText.style.paddingRight = '4px';
-    controlText.innerHTML = title;
-    controlUI.appendChild(controlText);
-
-    google.maps.event.addDomListener(controlUI, 'click', handler);
+function getGmapTileImgSrc(coord, zoom) {
+    return "http://mt0.googleapis.com/vt?src=apiv3&x=" + coord.x + "&y=" + coord.y + "&z=" + zoom;
 }
 
-var clearLocalStorageDiv = document.createElement('DIV');
-var clearLocalStorageButton = new CustomControl(clearLocalStorageDiv, map,
-    'Clear localStorage',  clearLocalStorage);
+function getLocalTileImgSrc(coord, zoom) {
+    return "cache/" + zoom + "/" + coord.x + "_" + coord.y + ".png";
+}
 
-var prepareLocalStorageDiv = document.createElement('DIV');
-var prepareLocalStorageButton = new CustomControl(prepareLocalStorageDiv, map,
-    'Prepare localStorage', prepareLocalStorage);
-
-clearLocalStorageDiv.index = 1;
-prepareLocalStorageDiv.index = 1;
-map.controls[google.maps.ControlPosition.TOP_RIGHT].push(clearLocalStorageDiv);
-map.controls[google.maps.ControlPosition.TOP_RIGHT].push(prepareLocalStorageDiv);
+function getWebStorageTileImgSrc(coord, zoom) {
+    return webStorage.getItem([zoom, coord.x, coord.y].join('_'));
+}
