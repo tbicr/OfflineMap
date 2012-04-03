@@ -24,7 +24,7 @@ class Point():
         return Point(self.lat + delta_lat, self.lng + delta_lng)
 
     def to_lat_lng(self):
-        return (self.lat, self.lng)
+        return self.lat, self.lng
 
     @property
     def x(self):
