@@ -71,13 +71,14 @@ def get_length(point1, point2):
     return math.sqrt((point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2)
 
 
-def get_angle(point1, point2, point3):
-    side12 = get_length(point1, point2)
-    side13 = get_length(point1, point3)
-    side23 = get_length(point2, point3)
-    if side12 == 0 or side13 == 0:
+def get_angle(angle_point, end_point1, end_point2):
+    side_angle_point1 = get_length(angle_point, end_point1)
+    side_angle_point2 = get_length(angle_point, end_point2)
+    side_point1_point2 = get_length(end_point1, end_point2)
+    if side_angle_point1 == 0 or side_angle_point2 == 0:
         return 0
-    value = min(max((side12 ** 2 + side13 ** 2 - side23 ** 2) / (2 * side12 * side13), -1), 1)
+    value = min(max((side_angle_point1 ** 2 + side_angle_point2 ** 2 - side_point1_point2 ** 2) /
+        (2 * side_angle_point1 * side_angle_point2), -1), 1)
     return math.acos(value)
 
 
