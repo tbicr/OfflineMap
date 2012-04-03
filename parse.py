@@ -77,9 +77,9 @@ def get_angle(angle_point, end_point1, end_point2):
     side_point1_point2 = get_length(end_point1, end_point2)
     if side_angle_point1 == 0 or side_angle_point2 == 0:
         return 0
-    value = min(max((side_angle_point1 ** 2 + side_angle_point2 ** 2 - side_point1_point2 ** 2) /
-        (2 * side_angle_point1 * side_angle_point2), -1), 1)
-    return math.acos(value)
+    value = (side_angle_point1 ** 2 + side_angle_point2 ** 2 - side_point1_point2 ** 2) /\
+            (2 * side_angle_point1 * side_angle_point2)
+    return math.acos(min(max(value, -1), 1))
 
 
 def get_top_point(points):
