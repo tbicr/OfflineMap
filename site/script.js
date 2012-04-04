@@ -71,7 +71,7 @@ var spriteRanges = {
 
 var max_zoom = 13;
 
-var webStorage = new WebStorage();
+var webStorage = new WebStorageFactory().getWebStorage();
 
 function imageToBase64(image) {
     var canvas = document.createElement("canvas");
