@@ -1,4 +1,7 @@
 var spriteRanges = {
+    // tl = top_left
+    // br = bottom_right
+    // {zoom: {tl: {}, br: {}}
     0: {
         tl: {x: 0, y: 0},
         br: {x: 0, y: 0}
@@ -78,19 +81,19 @@ function imageToBase64(image) {
     canvas.width = image.width;
     canvas.height = image.height;
 
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(image, 0, 0);
+    var context = canvas.getContext("2d");
+    context.drawImage(image, 0, 0);
 
     return canvas.toDataURL("image/png");
 }
 
-function loadImageToWebStorage(z, x, y){
-    var url =  "cache/" + z + "/" + x + "_" + y + ".png";
-    var img = new Image();
-    img.onload = function() {
-        webStorage.setItem([z,x,y].join('_'), imageToBase64(img));
+function loadImageToWebStorage(zoom, x, y){
+    var url =  "cache/" + zoom + "/" + x + "_" + y + ".png";
+    var image = new Image();
+    image.onload = function() {
+        webStorage.setItem([zoom, x, y].join('_'), imageToBase64(image));
     };
-    img.src = url;
+    image.src = url;
 }
 
 function clearWebStorage() {
@@ -98,14 +101,14 @@ function clearWebStorage() {
 }
 
 function prepareWebStorage() {
-    for (var z in spriteRanges) {
-        if (z > max_zoom) {
+    for (var zoom in spriteRanges) {
+        if (zoom > max_zoom) {
             break;
         }
-        var sprites = spriteRanges[z];
+        var sprites = spriteRanges[zoom];
         for (var x=sprites.tl.x; x<=sprites.br.x; x++) {
             for (var y=sprites.tl.y; y<=sprites.br.y; y++) {
-                loadImageToWebStorage(z, x, y);
+                loadImageToWebStorage(zoom, x, y);
             }
         }
     }
