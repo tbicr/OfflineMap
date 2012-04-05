@@ -1,7 +1,7 @@
 import os
 import urllib2
 import math
-import sys
+from sys import maxint as MAX_INT
 from multiprocessing.pool import ThreadPool as Pool
 
 
@@ -37,7 +37,7 @@ class Point():
 
 class Tile():
 
-    __repr_template = '{x: %(x)s, y: %(y)s, zoom: %(zoom)s}'
+    _represent_template = '{x: %(x)s, y: %(y)s, zoom: %(zoom)s}'
 
     def __init__(self, x, y, zoom):
         self.x = x
@@ -54,7 +54,7 @@ class Tile():
         return hash((self.x, self.y, self.zoom))
 
     def __repr__(self):
-        return self.apply_template(self.__repr_template)
+        return self.apply_template(self._represent_template)
 
     def apply_template(self, template):
         return template % {'x': self.x, 'y': self.y, 'zoom': self.zoom}
@@ -83,7 +83,7 @@ def get_angle(angle_point, end_point1, end_point2):
 
 
 def get_top_point(points):
-    top_point = Point(sys.maxint, None)
+    top_point = Point(MAX_INT, None)
     for lat, lng in points:
         if lat < top_point.lat:
             top_point = Point(lat, lng)
@@ -130,8 +130,8 @@ def polar_to_int_polygon(polar_polygon, zoom):
 
 
 def get_int_polygon_rectangle(int_polygon):
-    x_top_left = sys.maxint
-    y_top_left = sys.maxint
+    x_top_left = MAX_INT
+    y_top_left = MAX_INT
     x_bottom_right = 0
     y_bottom_right = 0
     zoom = int_polygon[0].zoom
