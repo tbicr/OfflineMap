@@ -1,70 +1,9 @@
+from operator import itemgetter
 import os
 import urllib2
 import math
 from sys import maxint as MAX_INT
 from multiprocessing.pool import ThreadPool as Pool
-
-
-class Point():
-
-    def __init__(self, lat, lng):
-        self.lat = lat
-        self.lng = lng
-
-    def __eq__(self, other):
-        return self.lat == other.lat and self.lng == other.lng
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((self.lat, self.lng))
-
-    def clone(self, delta_lat=0, delta_lng=0):
-        return Point(self.lat + delta_lat, self.lng + delta_lng)
-
-    def to_lat_lng(self):
-        return self.lat, self.lng
-
-    @property
-    def x(self):
-        return self.lng
-
-    @property
-    def y(self):
-        return self.lat
-
-
-class Tile():
-
-    _represent_template = '{x: %(x)s, y: %(y)s, zoom: %(zoom)s}'
-
-    def __init__(self, x, y, zoom):
-        self.x = x
-        self.y = y
-        self.zoom = zoom
-
-    def __eq__(self, other):
-        return self.x == other.x and self.y == other.y and self.zoom == other.zoom
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash((self.x, self.y, self.zoom))
-
-    def __repr__(self):
-        return self.apply_template(self._represent_template)
-
-    def apply_template(self, template):
-        return template % {'x': self.x, 'y': self.y, 'zoom': self.zoom}
-
-
-class Templates():
-
-    def __init__(self, url_template, save_file_path_template):
-        self.url_template = url_template
-        self.save_file_path_template = save_file_path_template
 
 
 def get_length(point1, point2):
@@ -82,30 +21,22 @@ def get_angle(angle_point, end_point1, end_point2):
     return math.acos(min(max(value, -1), 1))
 
 
-def get_top_point(points):
-    top_point = Point(MAX_INT, None)
-    for lat, lng in points:
-        if lat < top_point.lat:
-            top_point = Point(lat, lng)
-    return top_point
-
-
 def get_next_polygon_point(angle_point, first_end_point, points):
     next_point = angle_point
     next_angle = 0
     for lat, lng in points:
         current_point = Point(lat, lng)
         current_angle = get_angle(angle_point, first_end_point, current_point)
-        if current_angle > next_angle or\
-           current_angle == next_angle and\
-           get_length(angle_point, current_point) > get_length(angle_point, next_point):
+        if (current_angle > next_angle or
+            current_angle == next_angle and
+            get_length(angle_point, current_point) > get_length(angle_point, next_point)):
             next_angle = current_angle
             next_point = current_point
     return next_point
 
 
 def get_polar_polygon_from_points(points):
-    top_point = get_top_point(points)
+    top_point =  Point(*min(points, key=itemgetter(0)))
     polygon_points = [top_point]
     while True:
         angle_point = polygon_points[-1]
@@ -148,7 +79,7 @@ def check_point_in_int_polygon(tile, int_polygon, imprecision=0.1):
         if polygon_point == tile:
             return True
     angle_sum = 0
-    for i in xrange(0, len(int_polygon)):
+    for i in xrange(len(int_polygon)):
         tile1 = int_polygon[i]
         tile2 = int_polygon[i + 1] if i + 1 != len(int_polygon) else int_polygon[0]
         angle_sum += get_angle(tile, tile1, tile2)
@@ -161,21 +92,21 @@ def create_dirs(save_file_path):
         os.makedirs(dir_name)
 
 
-def download_tile(tile, templates):
-    url = tile.apply_template(templates.url_template)
-    save_file_path = tile.apply_template(templates.save_file_path_template)
+def download_tile(tile, url_template, save_file_path_template):
+    url = tile.render(url_template)
+    save_file_path = tile.render(save_file_path_template)
     create_dirs(save_file_path)
     with open(save_file_path, 'wb') as file:
         file.write(urllib2.urlopen(url).read())
 
 
-def check_and_download_tile(tile, templates, int_polygon):
+def check_and_download_tile(tile, url_template, save_file_path_template, int_polygon):
     if not check_point_in_int_polygon(tile, int_polygon):
         return
-    download_tile(tile, templates)
+    download_tile(tile, url_template, save_file_path_template)
 
 
-def download_tiles_in_polar_polygon(polar_polygon, zooms, templates, threads_count=10):
+def download_tiles_in_polar_polygon(polar_polygon, zooms, url_template, save_file_path_template, threads_count=10):
     for zoom in zooms:
         int_polygon = polar_to_int_polygon(polar_polygon, zoom)
         point_top_left, point_bottom_right = get_int_polygon_rectangle(int_polygon)
@@ -185,10 +116,66 @@ def download_tiles_in_polar_polygon(polar_polygon, zooms, templates, threads_cou
         for x in xrange(point_top_left.x, point_bottom_right.x + 1):
             for y in xrange(point_top_left.y, point_bottom_right.y + 1):
                 threads_pull.apply_async(check_and_download_tile,
-                    [Tile(x, y, zoom), templates, int_polygon])
+                    [Tile(x, y, zoom), url_template, save_file_path_template, int_polygon])
 
         threads_pull.close()
         threads_pull.join()
+
+
+class Point():
+
+    def __init__(self, lat, lng):
+        self.lat = lat
+        self.lng = lng
+
+    def __eq__(self, other):
+        return self.lat == other.lat and self.lng == other.lng
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.lat, self.lng))
+
+    def __repr__(self):
+        return '{lat: %(lat)s, lng: %(lng)s}' % {'lat': self.lat, 'lng': self.lng}
+
+    def clone(self, delta_lat=0, delta_lng=0):
+        return Point(self.lat + delta_lat, self.lng + delta_lng)
+
+    def to_lat_lng(self):
+        return self.lat, self.lng
+
+    @property
+    def x(self):
+        return self.lng
+
+    @property
+    def y(self):
+        return self.lat
+
+
+class Tile():
+
+    def __init__(self, x, y, zoom):
+        self.x = x
+        self.y = y
+        self.zoom = zoom
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y and self.zoom == other.zoom
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __hash__(self):
+        return hash((self.x, self.y, self.zoom))
+
+    def __repr__(self):
+        return self.render('{x: %(x)s, y: %(y)s, zoom: %(zoom)s}')
+
+    def render(self, template):
+        return template % {'x': self.x, 'y': self.y, 'zoom': self.zoom}
 
 
 if __name__ == '__main__':
@@ -197,4 +184,4 @@ if __name__ == '__main__':
     save_file_path_template = 'site/cache/%(zoom)s/%(x)s_%(y)s.png'
     zooms = xrange(15 + 1)
     polar_polygon = [point.to_lat_lng() for point in get_polar_polygon_from_points(all_points)]
-    download_tiles_in_polar_polygon(polar_polygon, zooms, Templates(url_template, save_file_path_template))
+    download_tiles_in_polar_polygon(polar_polygon, zooms, url_template, save_file_path_template)
