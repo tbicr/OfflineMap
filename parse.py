@@ -78,9 +78,8 @@ def check_point_in_int_polygon(tile, int_polygon, imprecision=0.1):
         if polygon_point == tile:
             return True
     angle_sum = 0
-    for i in xrange(len(int_polygon)):
-        tile1 = int_polygon[i]
-        tile2 = int_polygon[i + 1] if i + 1 != len(int_polygon) else int_polygon[0]
+    for index, tile1 in enumerate(int_polygon):
+        tile2 = int_polygon[index + 1] if index + 1 != len(int_polygon) else int_polygon[0]
         angle_sum += get_angle(tile, tile1, tile2)
     return angle_sum >= 2 * math.pi - imprecision
 
@@ -141,9 +140,6 @@ class Point():
 
     def clone(self, delta_lat=0, delta_lng=0):
         return Point(self.lat + delta_lat, self.lng + delta_lng)
-
-    def to_lat_lng(self):
-        return self.lat, self.lng
 
     @property
     def x(self):
