@@ -1,7 +1,7 @@
-from operator import itemgetter
 import os
 import urllib2
 import math
+from operator import attrgetter
 from sys import maxint as MAX_INT
 from multiprocessing.pool import ThreadPool as Pool
 
@@ -24,19 +24,18 @@ def get_angle(angle_point, end_point1, end_point2):
 def get_next_polygon_point(angle_point, first_end_point, points):
     next_point = angle_point
     next_angle = 0
-    for lat, lng in points:
-        current_point = Point(lat, lng)
-        current_angle = get_angle(angle_point, first_end_point, current_point)
+    for point in points:
+        current_angle = get_angle(angle_point, first_end_point, point)
         if (current_angle > next_angle or
             current_angle == next_angle and
-            get_length(angle_point, current_point) > get_length(angle_point, next_point)):
+            get_length(angle_point, point) > get_length(angle_point, next_point)):
             next_angle = current_angle
-            next_point = current_point
+            next_point = point
     return next_point
 
 
 def get_polar_polygon_from_points(points):
-    top_point =  Point(*min(points, key=itemgetter(0)))
+    top_point = min(points, key=attrgetter('lat'))
     polygon_points = [top_point]
     while True:
         angle_point = polygon_points[-1]
@@ -57,7 +56,7 @@ def polar_to_int(lat, lng, zoom):
 
 
 def polar_to_int_polygon(polar_polygon, zoom):
-    return [polar_to_int(lat, lng, zoom) for lat, lng in polar_polygon]
+    return [polar_to_int(point.lat, point.lng, zoom) for point in polar_polygon]
 
 
 def get_int_polygon_rectangle(int_polygon):
@@ -183,5 +182,6 @@ if __name__ == '__main__':
     url_template = 'http://mt0.googleapis.com/vt?src=apiv3&x=%(x)s&y=%(y)s&z=%(zoom)s'
     save_file_path_template = 'site/cache/%(zoom)s/%(x)s_%(y)s.png'
     zooms = xrange(15 + 1)
-    polar_polygon = [point.to_lat_lng() for point in get_polar_polygon_from_points(all_points)]
+    points = [Point(lat, lng) for lat, lng in all_points]
+    polar_polygon = get_polar_polygon_from_points(points)
     download_tiles_in_polar_polygon(polar_polygon, zooms, url_template, save_file_path_template)
