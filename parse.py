@@ -35,13 +35,13 @@ def get_next_polygon_point(angle_point, first_end_point, points):
 
 
 def get_polar_polygon_from_points(points):
-    bottom_point = min(points, key=attrgetter('lat'))
-    polygon_points = [bottom_point]
+    top_point = min(points, key=attrgetter('lng'))
+    polygon_points = [top_point]
     while True:
         angle_point = polygon_points[-1]
         first_end_point = polygon_points[-2] if len(polygon_points) > 1 else angle_point.clone(delta_lat=1)
         next_point = get_next_polygon_point(angle_point, first_end_point, points)
-        if bottom_point != next_point:
+        if top_point != next_point:
             polygon_points.append(next_point)
         else:
             break
