@@ -35,7 +35,7 @@ def get_next_polygon_point(angle_point, first_end_point, points):
 
 
 def get_polar_polygon_from_points(points):
-    top_point = min(points, key=attrgetter('lng'))
+    top_point = max(points, key=attrgetter('lng'))
     polygon_points = [top_point]
     while True:
         angle_point = polygon_points[-1]
