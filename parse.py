@@ -1,6 +1,8 @@
 import os
 import urllib2
 import math
+import base64
+import json
 from operator import attrgetter
 from sys import maxint as MAX_INT
 from multiprocessing.pool import ThreadPool as Pool
@@ -120,6 +122,37 @@ def download_tiles_in_polar_polygon(polar_polygon, zooms, url_template, save_fil
         threads_pull.join()
 
 
+def get_images_path_list(root_path, from_root_path='', filter=''):
+    for path, dirs, files in os.walk(root_path):
+        for file in files:
+            file_path = os.path.relpath(os.path.join(path, file), from_root_path)
+            if file_path[-len(filter):] == filter:
+                yield file_path
+
+
+def get_zoom_and_coord_from_path(path):
+    zoom = os.path.basename(os.path.dirname(path))
+    coord = os.path.basename(path).split('.')[0]
+    return '%s_%s' % (zoom, coord)
+
+
+def image_to_base64(path):
+    with open(path, 'rb') as file:
+        return base64.b64encode(file.read())
+
+
+def save_images_path_list(file_list, save_file):
+    metadata_file_map = dict([(get_zoom_and_coord_from_path(file), file) for file in file_list])
+    with open(save_file, 'wb') as file:
+        json.dump(metadata_file_map, file)
+
+
+def save_images_base64_list(file_list, save_file):
+    metadata_file_map = dict([(get_zoom_and_coord_from_path(file), image_to_base64(file)) for file in file_list])
+    with open(save_file, 'wb') as file:
+        json.dump(metadata_file_map, file)
+
+
 class Point():
 
     def __init__(self, lat, lng):
@@ -176,8 +209,19 @@ class Tile():
 if __name__ == '__main__':
     from fixtures import all_points
     url_template = 'http://mt0.googleapis.com/vt?src=apiv3&x=%(x)s&y=%(y)s&z=%(zoom)s'
-    save_file_path_template = 'site/cache/%(zoom)s/%(x)s_%(y)s.png'
+    project_path = 'site'
+    save_files_path = project_path + '/cache'
+    save_file_path_template = save_files_path + '/%(zoom)s/%(x)s_%(y)s.png'
     zooms = xrange(15 + 1)
     points = [Point(lat, lng) for lat, lng in all_points]
     polar_polygon = get_polar_polygon_from_points(points)
     download_tiles_in_polar_polygon(polar_polygon, zooms, url_template, save_file_path_template)
+
+    images_path_list = save_files_path + '/images.json'
+    file_list = list(get_images_path_list(save_files_path, project_path, '.png'))
+    save_images_path_list(file_list, images_path_list)
+
+    images_base64_list = save_files_path + '/imagesBase64.json'
+    file_list = list(get_images_path_list(save_files_path, '', '.png'))
+    save_images_base64_list(file_list, images_base64_list)
+
