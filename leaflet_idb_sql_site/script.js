@@ -22,9 +22,9 @@
             },
 
             _setUpTile: function (tile, key, value, cache) {
-                tile._storageKey = key;
                 tile._layer = this;
                 if (cache) {
+                    tile._storageKey = key;
                     tile.onload = this._tileOnLoadWithCache;
                     tile.crossOrigin = 'Anonymous';
                 } else {
@@ -36,7 +36,7 @@
 
             _loadTile: function (tile, tilePoint) {
                 this._adjustTilePoint(tilePoint);
-                var key = tilePoint.z + '_' + tilePoint.x + '_' + tilePoint.y;
+                var key = tilePoint.z + ',' + tilePoint.x + ',' + tilePoint.y;
 
                 var self = this;
                 if (storage) {
