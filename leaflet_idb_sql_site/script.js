@@ -15,36 +15,44 @@
             return canvas.toDataURL('image/png');
         },
 
-        _tileOnLoad: function () {
+        _tileOnLoadWithCache: function () {
             if (storage) {
                 storage.add(this._storageKey, this._layer._imageToDataUri(this));
             }
             L.TileLayer.prototype._tileOnLoad.apply(this, arguments);
         },
 
+        _setUpTile: function (tile, key, value, cache) {
+            tile._storageKey = key;
+            tile._layer = this;
+            if (cache) {
+                tile.onload = this._tileOnLoadWithCache;
+                tile.crossOrigin = 'Anonymous';
+            } else {
+                tile.onload = this._tileOnLoad;
+            }
+            tile.onerror = this._tileOnError;
+            tile.src = value;
+        },
+
         _loadTile: function (tile, tilePoint) {
             this._adjustTilePoint(tilePoint);
-            var key = tile._storageKey = tilePoint.z + '_' + tilePoint.x + '_' + tilePoint.y;
-            tile._layer = this;
-            tile.onload = this._tileOnLoad;
-            tile.onerror = this._tileOnError;
+            var key = tilePoint.z + '_' + tilePoint.x + '_' + tilePoint.y;
 
             var self = this;
             if (storage) {
                 storage.get(key, function () {
                     var dataUri = this.result;
                     if (dataUri) {
-                        tile.src = dataUri.value;
+                        self._setUpTile(tile, key, dataUri.value, false);
                     } else {
-                        tile.crossOrigin = 'Anonymous';
-                        tile.src = self.getTileUrl(tilePoint);
+                        self._setUpTile(tile, key, self.getTileUrl(tilePoint), true);
                     }
                 }, function () {
-                    tile.crossOrigin = 'Anonymous';
-                    tile.src = self.getTileUrl(tilePoint);
+                    self._setUpTile(tile, key, self.getTileUrl(tilePoint), true);
                 });
             } else {
-                tile.src = self.getTileUrl(tilePoint);
+                self._setUpTile(tile, key, self.getTileUrl(tilePoint), false);
             }
         }
     });
