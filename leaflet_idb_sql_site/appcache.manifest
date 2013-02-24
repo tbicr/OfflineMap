@@ -6,6 +6,7 @@ NETWORK:
 CACHE:
 index.html
 style.css
+storage.js
 script.js
 
 leaflet.css
