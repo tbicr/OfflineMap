@@ -1,7 +1,7 @@
 'use strict';
 
 (function (window, L) {
-    var S = null;
+    var storage = null;
 
     var StorageTileLayer = L.TileLayer.extend({
         _imageToDataUri: function (image) {
@@ -16,8 +16,8 @@
         },
 
         _tileOnLoad: function () {
-            if (S) {
-                S.add(this._storageKey, this._layer._imageToDataUri(this));
+            if (storage) {
+                storage.add(this._storageKey, this._layer._imageToDataUri(this));
             }
             L.TileLayer.prototype._tileOnLoad.apply(this, arguments);
         },
@@ -30,8 +30,8 @@
             tile.onerror = this._tileOnError;
 
             var self = this;
-            if (S) {
-                S.get(key, function () {
+            if (storage) {
+                storage.get(key, function () {
                     var dataUri = this.result;
                     if (dataUri) {
                         tile.src = dataUri.value;
@@ -136,8 +136,8 @@
         return getIndexedDBStorage() || getWebSqlStorage() || null;
     };
 
-    S = getStorage();
-    if (!S) {
+    storage = getStorage();
+    if (!storage) {
         initMap();
     }
 })(window, L);
