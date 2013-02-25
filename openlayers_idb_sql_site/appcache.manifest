@@ -1,0 +1,13 @@
+CACHE MANIFEST
+
+NETWORK:
+*
+
+CACHE:
+index.html
+style.css
+storage.js
+script.js
+
+theme/default/style.css
+OpenLayers.js
