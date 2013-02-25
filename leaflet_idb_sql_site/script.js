@@ -4,7 +4,7 @@
     initStorage(function (storage) {
         var StorageTileLayer = L.TileLayer.extend({
             _imageToDataUri: function (image) {
-                var canvas = document.createElement('canvas');
+                var canvas = window.document.createElement('canvas');
                 canvas.width = image.width;
                 canvas.height = image.height;
 
