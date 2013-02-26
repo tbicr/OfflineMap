@@ -3,6 +3,8 @@
 (function (window, OpenLayers, initStorage) {
     initStorage(function (storage) {
         var StorageImageTile = OpenLayers.Class(OpenLayers.Tile.Image, {
+            crossOriginKeyword: 'Anonymous',
+
             _imageToDataUri: function (image) {
                 var canvas = window.document.createElement('canvas');
                 canvas.width = image.width;
@@ -14,19 +16,6 @@
                 return canvas.toDataURL('image/png');
             },
 
-            renderTile: function() {
-                var id = this.asyncRequestId = (this.asyncRequestId || 0) + 1;
-                var self = this;
-                this.layer.getURLasync(this.bounds, function(url, key, cache) {
-                    if (id === self.asyncRequestId) {
-                        self.url = url;
-                        self._storageKey = key;
-                        self._storageCache = cache;
-                        self.initImage();
-                    }
-                }, this);
-            },
-
             onImageLoadWithCache: function() {
                 if (storage) {
                     storage.add(this._storageKey, this._imageToDataUri(this.imgDiv));
@@ -34,20 +23,39 @@
                 this.onImageLoad.apply(this, arguments);
             },
 
-            initImage: function() {
+            renderTile: function() {
+                var self = this;
+                var xyz = this.layer.getXYZ(this.bounds);
+                var key = xyz.z + ',' + xyz.x + ',' + xyz.y;
+                var url = this.layer.getURL(this.bounds);
+                if (storage) {
+                    storage.get(key, function () {
+                        var dataUri = this.result;
+                        if (dataUri) {
+                            self.initImage(key, dataUri.value, false);
+                        } else {
+                            self.initImage(key, url, true);
+                        }
+                    }, function () {
+                        self.initImage(key, url, true);
+                    });
+                } else {
+                    self.initImage(key, url, false);
+                }
+            },
+
+            initImage: function(key, url, cache) {
                 this.events.triggerEvent('beforeload');
                 this.layer.div.appendChild(this.getTile());
                 this.events.triggerEvent(this._loadEvent);
                 var img = this.getImage();
 
                 this.stopLoading();
-                if (this.crossOriginKeyword) {
-                    img.removeAttribute('crossorigin');
-                }
-                if (this._storageCache) {
+                if (cache) {
                     OpenLayers.Event.observe(img, 'load',
                         OpenLayers.Function.bind(this.onImageLoadWithCache, this)
                     );
+                    this._storageKey = key;
                 } else {
                     OpenLayers.Event.observe(img, 'load',
                         OpenLayers.Function.bind(this.onImageLoad, this)
@@ -57,7 +65,7 @@
                     OpenLayers.Function.bind(this.onImageError, this)
                 );
                 this.imageReloadAttempts = 0;
-                this.setImgSrc(this.url);
+                this.setImgSrc(url);
             }
         });
 
@@ -74,26 +82,6 @@
 
                 obj = OpenLayers.Layer.Grid.prototype.clone.apply(this, [obj]);
                 return obj;
-            },
-
-            getURLasync: function (bounds, callback) {
-                var xyz = this.getXYZ(bounds);
-                var key = xyz.z + ',' + xyz.x + ',' + xyz.y;
-                var url = this.getURL(bounds);
-                if (storage) {
-                    storage.get(key, function () {
-                        var dataUri = this.result;
-                        if (dataUri) {
-                            callback(dataUri.value, key, false);
-                        } else {
-                            callback(url, key, true);
-                        }
-                    }, function () {
-                        callback(url, key, true);
-                    });
-                } else {
-                    callback(url, key, false);
-                }
             }
         });
 
