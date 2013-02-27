@@ -25,7 +25,7 @@ window.offlineMaps.eventManager = {
         var events = this._events;
         if (event in events) {
             var actions = events[event];
-            var args = Array.prototype.slice(arguments, 1);
+            var args = Array.prototype.slice.call(arguments, 1);
             for (var i = 0, l = actions.length; i < l; i++) {
                 var action = actions[i];
                 if (action instanceof Function) {
