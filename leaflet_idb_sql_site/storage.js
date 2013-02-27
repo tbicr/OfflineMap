@@ -48,14 +48,15 @@
     };
 
     var getWebSqlStorage = function () {
-        var self = this;
         var openDatabase = window.openDatabase;
 
         var WebSqlImpl = function () {
-            var db = openDatabase('TileStorage', '1.0', 'Tile Storage', 50 * 1024 * 1024);
+            var self = this;
+            var db = openDatabase('TileStorage', '1.0', 'Tile Storage', 5 * 1024 * 1024);
             db.transaction(function (tx) {
-                tx.executeSql('CREATE TABLE IF NOT EXISTS tile (key TEXT PRIMARY KEY, value TEXT)', []);
-                emr.fire('storageLoaded', self);
+                tx.executeSql('CREATE TABLE IF NOT EXISTS tile (key TEXT PRIMARY KEY, value TEXT)', [], function () {
+                    emr.fire('storageLoaded', self);
+                });
             });
 
             this.add = function (key, value) {
