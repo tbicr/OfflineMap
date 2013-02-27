@@ -14,8 +14,9 @@
         },
 
         _tileOnLoadWithCache: function () {
-            if (this.options.storage) {
-                this.options.storage.add(this._storageKey, this._layer._imageToDataUri(this));
+            var storage = this._layer.options.storage;
+            if (storage) {
+                storage.add(this._storageKey, this._layer._imageToDataUri(this));
             }
             L.TileLayer.prototype._tileOnLoad.apply(this, arguments);
         },
