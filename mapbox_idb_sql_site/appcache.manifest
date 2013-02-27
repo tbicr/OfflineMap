@@ -6,8 +6,10 @@ NETWORK:
 CACHE:
 index.html
 style.css
+event.js
 storage.js
-script.js
+map.js
+run.js
 
 mapbox.css
 mapbox.js

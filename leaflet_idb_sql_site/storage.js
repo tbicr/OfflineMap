@@ -1,7 +1,7 @@
 'use strict';
 
-var initStorage = function (callback) {
-    var getIndexedDBStorage = function (callback) {
+(function (window, emr) {
+    var getIndexedDBStorage = function () {
         var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
         var IndexedDBImpl = function () {
@@ -11,7 +11,7 @@ var initStorage = function (callback) {
 
             request.onsuccess = function() {
                 db = this.result;
-                callback(self);
+                emr.fire('storageLoaded', self);
             };
 
             request.onerror = function (error) {
@@ -47,7 +47,7 @@ var initStorage = function (callback) {
         return indexedDB ? new IndexedDBImpl() : null;
     };
 
-    var getWebSqlStorage = function (callback) {
+    var getWebSqlStorage = function () {
         var self = this;
         var openDatabase = window.openDatabase;
 
@@ -55,7 +55,7 @@ var initStorage = function (callback) {
             var db = openDatabase('TileStorage', '1.0', 'Tile Storage', 50 * 1024 * 1024);
             db.transaction(function (tx) {
                 tx.executeSql('CREATE TABLE IF NOT EXISTS tile (key TEXT PRIMARY KEY, value TEXT)', []);
-                callback(self);
+                emr.fire('storageLoaded', self);
             });
 
             this.add = function (key, value) {
@@ -80,8 +80,10 @@ var initStorage = function (callback) {
         return openDatabase ? new WebSqlImpl() : null;
     };
 
-    var storage =  getIndexedDBStorage(callback) || getWebSqlStorage(callback) || null;
-    if (!storage) {
-        callback(null);
-    }
-};
+    emr.on('storageLoad', function () {
+        var storage =  getIndexedDBStorage() || getWebSqlStorage() || null;
+        if (!storage) {
+            emr.fire('storageLoaded', null);
+        }
+    });
+})(window, window.offlineMaps.eventManager);

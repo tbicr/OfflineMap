@@ -6,8 +6,10 @@ NETWORK:
 CACHE:
 index.html
 style.css
+event.js
 storage.js
-script.js
+map.js
+run.js
 
 theme/default/style.css
 OpenLayers.js
