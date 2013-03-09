@@ -36,7 +36,7 @@ var StorageTileLayer = L.TileLayer.extend({
 
     _loadTile: function (tile, tilePoint) {
         this._adjustTilePoint(tilePoint);
-        var key = tilePoint.z + ',' + tilePoint.x + ',' + tilePoint.y;
+        var key = tilePoint.z + ',' + tilePoint.y + ',' + tilePoint.x;
 
         var self = this;
         if (this.options.storage) {
