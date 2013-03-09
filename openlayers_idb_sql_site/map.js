@@ -25,7 +25,7 @@
         renderTile: function() {
             var self = this;
             var xyz = this.layer.getXYZ(this.bounds);
-            var key = xyz.z + ',' + xyz.x + ',' + xyz.y;
+            var key = xyz.z + ',' + xyz.y + ',' + xyz.x;
             var url = this.layer.getURL(this.bounds);
             if (this.storage) {
                 this.storage.get(key, function (value) {
