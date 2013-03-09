@@ -26,10 +26,9 @@
             var key = xyz.z + ',' + xyz.x + ',' + xyz.y;
             var url = this.layer.getURL(this.bounds);
             if (this.storage) {
-                this.storage.get(key, function () {
-                    var dataUri = this.result;
-                    if (dataUri) {
-                        self.initImage(key, dataUri.value, false);
+                this.storage.get(key, function (value) {
+                    if (value) {
+                        self.initImage(key, value, false);
                     } else {
                         self.initImage(key, url, true);
                     }

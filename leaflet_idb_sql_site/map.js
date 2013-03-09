@@ -1,6 +1,6 @@
 'use strict';
 
-(function (window, emr, L) {
+(function (window, emr, L, undefined) {
     var StorageTileLayer = L.TileLayer.extend({
         _imageToDataUri: function (image) {
             var canvas = window.document.createElement('canvas');
@@ -40,10 +40,9 @@
 
             var self = this;
             if (this.options.storage) {
-                this.options.storage.get(key, function () {
-                    var dataUri = this.result;
-                    if (dataUri) {
-                        self._setUpTile(tile, key, dataUri.value, false);
+                this.options.storage.get(key, function (value) {
+                    if (value) {
+                        self._setUpTile(tile, key, value, false);
                     } else {
                         self._setUpTile(tile, key, self.getTileUrl(tilePoint), true);
                     }

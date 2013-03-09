@@ -36,10 +36,9 @@
     StorageRequestManager.prototype._loadTile = function (id, coord, url) {
         var self = this;
         if (this._storage) {
-            this._storage.get(id, function () {
-                var dataUri = this.result;
-                if (dataUri) {
-                    self._createTileImage(id, coord, dataUri.value, false);
+            this._storage.get(id, function (value) {
+                if (value) {
+                    self._createTileImage(id, coord, value, false);
                 } else {
                     self._createTileImage(id, coord, url, true);
                 }

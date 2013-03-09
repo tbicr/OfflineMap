@@ -1,6 +1,6 @@
 'use strict';
 
-(function (window, emr) {
+(function (window, emr, undefined) {
     var getIndexedDBStorage = function () {
         var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
 
@@ -39,7 +39,9 @@
                 var transaction = db.transaction(['tile'], 'readonly');
                 var objectStore = transaction.objectStore('tile');
                 var result = objectStore.get(key);
-                result.onsuccess = successCallback;
+                result.onsuccess = function () {
+                    successCallback(this.result ? this.result.value : undefined);
+                };
                 result.onerror = errorCallback;
             };
         };
@@ -73,7 +75,9 @@
 
             this.get = function (key, successCallback, errorCallback) {
                 db.transaction(function (tx) {
-                    tx.executeSql('SELECT value FROM tile WHERE key = ?', [key], successCallback, errorCallback);
+                    tx.executeSql('SELECT value FROM tile WHERE key = ?', [key], function (tx, result) {
+                        successCallback(result.rows.length ? result.rows.item(0).value : undefined);
+                    }, errorCallback);
                 });
             };
         };
