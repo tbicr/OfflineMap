@@ -2,6 +2,8 @@
 
 (function (window, emr, OpenLayers, undefined) {
     var StorageImageTile = OpenLayers.Class(OpenLayers.Tile.Image, {
+        crossOriginKeyword: 'Anonymous',
+
         _imageToDataUri: function (image) {
             var canvas = window.document.createElement('canvas');
             canvas.width = image.width;
