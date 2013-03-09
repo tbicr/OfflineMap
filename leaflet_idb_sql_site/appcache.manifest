@@ -1,0 +1,19 @@
+CACHE MANIFEST
+
+NETWORK:
+*
+
+CACHE:
+index.html
+style.css
+event.js
+storage.js
+map.js
+run.js
+
+leaflet.css
+leaflet.js
+images/layers.png
+images/marker-icon.png
+images/marker-icon@2x.png
+images/marker-shadow.png

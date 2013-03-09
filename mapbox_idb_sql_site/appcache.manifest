@@ -1,0 +1,16 @@
+CACHE MANIFEST
+
+NETWORK:
+*
+
+CACHE:
+index.html
+style.css
+event.js
+storage.js
+map.js
+run.js
+
+mapbox.css
+mapbox.js
+map-controls.png
