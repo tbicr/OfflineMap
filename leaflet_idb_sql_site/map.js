@@ -4,8 +4,8 @@
     var StorageTileLayer = L.TileLayer.extend({
         _imageToDataUri: function (image) {
             var canvas = window.document.createElement('canvas');
-            canvas.width = image.width;
-            canvas.height = image.height;
+            canvas.width = image.naturalWidth || image.width;
+            canvas.height = image.naturalHeight || image.height;
 
             var context = canvas.getContext('2d');
             context.drawImage(image, 0, 0);
