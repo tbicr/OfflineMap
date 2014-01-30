@@ -1,0 +1,19 @@
+CACHE MANIFEST
+
+NETWORK:
+*
+
+CACHE:
+index.html
+style.css
+map.js
+
+pouchdb-1.1.0.js
+
+leaflet.css
+leaflet-src.js
+images/layers.png
+images/layers-2x.png
+images/marker-icon.png
+images/marker-icon-2x.png
+images/marker-shadow.png
