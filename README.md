@@ -6,7 +6,7 @@
 ### Leaflet with IndexedDB and WebSQL:
 [Example](http://tbicr.github.com/OfflineMap/leaflet/index.html) and [Code](https://github.com/tbicr/OfflineMap/tree/master/leaflet_idb_sql_site). [MIT License](http://opensource.org/licenses/mit-license.php).
 
-*You can find more examples with LeafLet and PouchDB there: http://tbicr.github.io/OfflineMap/.
+You can find more examples with LeafLet and [PouchDB](http://pouchdb.com/) there: http://tbicr.github.io/OfflineMap/.
 
 ### Mapbox (Modest Maps) with IndexedDB and WebSQL:
 [Example](http://tbicr.github.com/OfflineMap/mapbox/index.html) and [Code](https://github.com/tbicr/OfflineMap/tree/master/mapbox_idb_sql_site). [MIT License](http://opensource.org/licenses/mit-license.php).
