@@ -69,7 +69,7 @@ function arrayBufferToBase64ImagePNG(buffer) {
     return 'data:image/png;base64,' + btoa(binary);
 }
 
-var dbname = 'websql://tile';
+var dbname = 'tile';
 var db = new PouchDB(dbname);
 var map = L.map('map').setView([53.902254, 27.561850], 13);
 new StorageTileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {storage: db}).addTo(map);
