@@ -1,23 +1,10 @@
 'use strict';
 
 var StorageTileLayer = L.TileLayer.extend({
-    _setUpTile: function (tile, value, blob) {
+    _setUpTile: function (tile, value) {
         tile._layer = this;
-        if (blob) {
-            value = URL.createObjectURL(value);
-            tile.onload = function () {
-                URL.revokeObjectURL(value);
-                L.TileLayer.prototype._tileOnLoad.apply(this, arguments);
-            };
-            tile.onerror = function () {
-                URL.revokeObjectURL(value);
-                L.TileLayer.prototype._tileOnError.apply(this, arguments);
-            };
-        } else {
-            tile.onload = this._tileOnLoad;
-            tile.onerror = this._tileOnError;
-        }
-
+        tile.onload = this._tileOnLoad;
+        tile.onerror = this._tileOnError;
         tile.src = value;
 
         this.fire('tileloadstart', {
@@ -31,9 +18,9 @@ var StorageTileLayer = L.TileLayer.extend({
         var key = tilePoint.z + ',' + tilePoint.x + ',' + tilePoint.y;
         var self = this;
         if (this.options.storage) {
-            this.options.storage.getAttachment(key, key, function (err, value) {
+            this.options.storage.get(key, function (err, value) {
                 if (value) {
-                    self._setUpTile(tile, value, true);
+                    self._setUpTile(tile, value.v);
                 } else {
                     self._setUpTile(tile, self.getTileUrl(tilePoint));
                 }
@@ -69,7 +56,8 @@ var ajax = function (src, responseType, callback) {
     xhr.send();
 };
 
-var db = new PouchDB('tile');
+var dbname = 'tile';
+var db = new PouchDB(dbname);
 var map = L.map('map').setView([53.902254, 27.561850], 13);
 new StorageTileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {storage: db}).addTo(map);
 
@@ -80,7 +68,11 @@ map.addControl(new Control({position: 'topleft', innerHTML: 'C', handler: functi
             (function (key) {
                 var src = 'http://tile.osm.org/' + key.split(',').join('/') + '.png';
                 ajax(src, 'blob', function (response) {
-                    db.putAttachment(key, key, 1, response, 'image/png');
+                    var reader = new FileReader();
+                    reader.onloadend = function(e) {
+                        db.put({_id: key, v: e.target.result});
+                    };
+                    reader.readAsDataURL(response);
                 });
             })(tile_key_list[i]);
         }
@@ -88,9 +80,9 @@ map.addControl(new Control({position: 'topleft', innerHTML: 'C', handler: functi
 }}));
 
 map.addControl(new Control({position: 'topleft', innerHTML: 'D', handler: function () {
-    PouchDB.destroy('tile', function (err, value) {
+    PouchDB.destroy(dbname, function (err, value) {
         if (!err) {
-            db = new PouchDB('tile');
+            db = new PouchDB(db);
         }
     });
 }}));
