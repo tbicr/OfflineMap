@@ -1,6 +1,6 @@
 # Online Map examples in web browser
 
-### Useful links
+### Useful links:
 - http://gis.stackexchange.com/q/44813/31124 and http://stackoverflow.com/q/14113278/880326
 
 ### Google Maps with localstorage:
