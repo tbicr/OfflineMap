@@ -1,0 +1,14 @@
+OpenLayers.cfg
+
+[first]
+
+[last]
+
+[include]
+OpenLayers/Map.js
+OpenLayers/Layer/OSM.js
+OpenLayers/Control/Zoom.js
+OpenLayers/Control/Navigation.js
+OpenLayers/Control/TouchNavigation.js
+
+[exclude]
