@@ -43,7 +43,6 @@
         },
 
         initImage: function(key, url, cache) {
-            this.events.triggerEvent('beforeload');
             this.layer.div.appendChild(this.getTile());
             this.events.triggerEvent(this._loadEvent);
             var img = this.getImage();
