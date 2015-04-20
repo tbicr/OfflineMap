@@ -3,8 +3,6 @@
 ## Main idea
 Modern js map libraries support sync and async tiles loading. You can change this method to own where used some permanent storage. Each tile have unique `src` so you can use unique id based on same data as `src` to store tile data. All map scripts, styles and other files (marker images) can be placed to application cache manifest file.
 
-In this examples used caching behaviour (cache data that you seen before), but you always can implement own button to cache some area with required zooms. For this case you should know id's of all tiles in some area to download it and store to storage.
-
 ## Useful links
 - http://gis.stackexchange.com/q/44813/31124
 - http://stackoverflow.com/q/14113278/880326
