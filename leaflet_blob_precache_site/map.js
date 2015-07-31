@@ -1,46 +1,57 @@
 'use strict';
 
 var StorageTileLayer = L.TileLayer.extend({
-    _setUpTile: function (tile, value, blob) {
-        tile._layer = this;
+    _setUpTile: function (done, tile, value, blob) {
         if (blob) {
             value = URL.createObjectURL(value);
-            tile.onload = function () {
+            tile.onload = L.bind(function (done, tile) {
                 URL.revokeObjectURL(value);
-                L.TileLayer.prototype._tileOnLoad.apply(this, arguments);
-            };
-            tile.onerror = function () {
+                this._tileOnLoad(done, tile);
+            }, this, done, tile);
+            tile.onerror = L.bind(function (done, tile) {
                 URL.revokeObjectURL(value);
-                L.TileLayer.prototype._tileOnError.apply(this, arguments);
-            };
+                this._tileOnError(done, tile);
+            }, this, done, tile);
         } else {
-            tile.onload = this._tileOnLoad;
-            tile.onerror = this._tileOnError;
+            tile.onload = L.bind(this._tileOnLoad, this, done, tile);
+            tile.onerror = L.bind(this._tileOnError, this, done, tile);
         }
 
         tile.src = value;
-
-        this.fire('tileloadstart', {
-            tile: tile,
-            url: tile.src
-        });
     },
 
-    _loadTile: function (tile, tilePoint) {
-        this._adjustTilePoint(tilePoint);
-        var key = tilePoint.z + ',' + tilePoint.x + ',' + tilePoint.y;
-        var self = this;
+    createTile: function (coords, done) {
+        var tile = document.createElement('img');
+
+        if (this.options.crossOrigin) {
+            tile.crossOrigin = '';
+        }
+
+        /*
+         Alt tag is set to empty string to keep screen readers from reading URL and for compliance reasons
+         http://www.w3.org/TR/WCAG20-TECHS/H67
+        */
+        tile.alt = '';
+
+        var x = coords.x,
+            y = this.options.tms ? this._globalTileRange.max.y - coords.y : coords.y,
+            z = this._getZoomForUrl(),
+            key = z + ',' + x + ',' + y,
+            self = this;
         if (this.options.storage) {
-            this.options.storage.getAttachment(key, '', function (err, value) {
+            this.options.storage.get(key, function (err, value) {
                 if (value) {
-                    self._setUpTile(tile, value, true);
+                    tile.src = value.v;
+                    self._setUpTile(done, tile, value.v, true);
                 } else {
-                    self._setUpTile(tile, self.getTileUrl(tilePoint));
+                    self._setUpTile(done, tile, self.getTileUrl(coords));
                 }
             });
         } else {
-            self._setUpTile(tile, self.getTileUrl(tilePoint));
+            self._setUpTile(done, tile, self.getTileUrl(coords));
         }
+
+        return tile;
     }
 });
 
